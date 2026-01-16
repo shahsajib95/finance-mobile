@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Plus, Home, Wallet, List, PieChart, Settings } from "lucide-react";
 import { QuickAddSheet } from "./quick-add-sheet";
 import { store } from "@/lib/store";
+import { seedIfEmpty } from "@/lib/seed";
 
 const nav = [
   { href: "/home", label: "Home", icon: Home },
@@ -24,6 +25,12 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (store.hasPin()) router.replace("/lock");
   }, []);
+
+  React.useEffect(() => {
+  (async () => {
+    await seedIfEmpty();
+  })();
+}, []);
 
   return (
     <div className="min-h-screen flex justify-center p-3 bg-background">
