@@ -84,7 +84,7 @@ function Row({
 
 export default function SettingsPage() {
   const txs = useTransactions(10000);
-  const wallets = useWallets();
+  const wallets = useWallets() as any;
 
   const fileRef = React.useRef<HTMLInputElement | null>(null);
   const router = useRouter();
