@@ -29,11 +29,17 @@ export function QuickAddSheet({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
   const wallets = useWallets();
 
-  function AmountChips({
-    onPick,
-  }: {
-    onPick: (v: number) => void;
-  }) {
+  // ✅ Prevent background scroll on mobile when sheet is open
+  React.useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  function AmountChips({ onPick }: { onPick: (v: number) => void }) {
     const chips = [100, 200, 500, 1000, 2000, 5000];
     return (
       <div className="flex flex-wrap gap-2">
@@ -87,6 +93,7 @@ export function QuickAddSheet({ children }: { children: React.ReactNode }) {
       const n = Number(amount);
       if (!Number.isFinite(n) || n <= 0) return;
 
+      // ✅ noon UTC to avoid timezone day shifting
       const createdAt = new Date(date + "T12:00:00.000Z").toISOString();
 
       try {
@@ -154,9 +161,7 @@ export function QuickAddSheet({ children }: { children: React.ReactNode }) {
           />
 
           <div className="mt-3">
-            <AmountChips
-              onPick={(v) => setAmount(String(v))}
-            />
+            <AmountChips onPick={(v) => setAmount(String(v))} />
           </div>
         </div>
 
@@ -285,13 +290,14 @@ export function QuickAddSheet({ children }: { children: React.ReactNode }) {
 
       <DialogContent
         className={cn(
+          // ✅ IMPORTANT: flex column + max height + overflow hidden
           "p-0 gap-0 w-[min(420px,calc(100vw-16px))] rounded-[28px] border-border overflow-hidden",
-          "sm:rounded-[28px]"
+          "flex flex-col max-h-[90dvh]"
         )}
         style={{ marginTop: "auto" }}
       >
-        {/* Gradient header */}
-        <div className="relative overflow-hidden p-5 text-primary-foreground">
+        {/* Header (fixed) */}
+        <div className="relative overflow-hidden p-5 text-primary-foreground shrink-0">
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-accent opacity-95" />
           <div className="absolute -top-20 -right-20 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute -bottom-20 -left-20 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
@@ -308,10 +314,16 @@ export function QuickAddSheet({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Body */}
-        <div className="p-5">
+        {/* ✅ Scroll Area (this must be flex-1 + min-h-0) */}
+        <div
+          className={cn(
+            "p-5 flex-1 min-h-0 overflow-y-auto overscroll-contain",
+            "[-webkit-overflow-scrolling:touch]"
+          )}
+        >
           <Tabs defaultValue="expense" className="w-full">
-            <TabsList className="w-full grid grid-cols-3 rounded-2xl bg-muted p-1">
+            {/* sticky tabs */}
+            <TabsList className="w-full grid grid-cols-3 rounded-2xl bg-muted p-1 sticky top-0 z-10">
               {(["expense", "income", "transfer"] as const).map((v) => (
                 <TabsTrigger
                   key={v}
@@ -320,7 +332,11 @@ export function QuickAddSheet({ children }: { children: React.ReactNode }) {
                 >
                   <span className="inline-flex items-center gap-2">
                     <TabIcon v={v} />
-                    {v === "expense" ? "Expense" : v === "income" ? "Income" : "Transfer"}
+                    {v === "expense"
+                      ? "Expense"
+                      : v === "income"
+                      ? "Income"
+                      : "Transfer"}
                   </span>
                 </TabsTrigger>
               ))}

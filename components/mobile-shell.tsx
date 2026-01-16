@@ -21,16 +21,14 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const showNav = pathname !== "/" && pathname !== "/splash";
 
-  const router = useRouter()
+  React.useEffect(() => {
+    store.seedIfEmpty();
+  }, []);
+
+  const router = useRouter();
   React.useEffect(() => {
     if (store.hasPin()) router.replace("/lock");
   }, []);
-
-  React.useEffect(() => {
-  (async () => {
-    await seedIfEmpty();
-  })();
-}, []);
 
   return (
     <div className="min-h-screen flex justify-center p-3 bg-background">
