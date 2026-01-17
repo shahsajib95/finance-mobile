@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { db } from "@/lib/db";
+import { store } from "@/lib/store";
+
 import {
   Dialog,
   DialogContent,
@@ -46,17 +47,16 @@ export function AddWalletSheet({ children }: { children: React.ReactNode }) {
   const [type, setType] = React.useState<"cash" | "bank">("bank");
   const [balance, setBalance] = React.useState("");
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const initial = Number(balance || 0);
     if (!name.trim()) return;
 
-    await db.wallets.add({
+    store.addWallet({
       name: name.trim(),
       type,
       balance: Number.isFinite(initial) ? initial : 0,
-      createdAt: new Date().toISOString(),
     });
 
     setName("");
@@ -65,7 +65,12 @@ export function AddWalletSheet({ children }: { children: React.ReactNode }) {
     setOpen(false);
   }
 
-  const icon = type === "cash" ? <Wallet className="h-5 w-5" /> : <Landmark className="h-5 w-5" />;
+  const icon =
+    type === "cash" ? (
+      <Wallet className="h-5 w-5" />
+    ) : (
+      <Landmark className="h-5 w-5" />
+    );
   const subtitle = type === "cash" ? "Cash wallet" : "Bank wallet";
 
   return (
@@ -74,7 +79,7 @@ export function AddWalletSheet({ children }: { children: React.ReactNode }) {
 
       <DialogContent
         className={cn(
-          "p-0 gap-0 w-[min(420px,calc(100vw-16px))] rounded-[28px] border-border overflow-hidden"
+          "p-0 gap-0 w-[min(420px,calc(100vw-16px))] rounded-[28px] border-border overflow-hidden",
         )}
         style={{ marginTop: "auto" }}
       >
@@ -101,7 +106,9 @@ export function AddWalletSheet({ children }: { children: React.ReactNode }) {
 
           <div className="relative mt-4 inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-1.5 text-xs">
             <span className="font-medium">{subtitle}</span>
-            <span className="text-primary-foreground/70">• set initial balance</span>
+            <span className="text-primary-foreground/70">
+              • set initial balance
+            </span>
           </div>
         </div>
 
